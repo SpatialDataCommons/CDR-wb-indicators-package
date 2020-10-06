@@ -1,0 +1,17 @@
+{
+	"provider_prefix":"mno",
+	"db_name" : "default",
+	"cdr_data_table" : "calls_100k_test",	
+
+	"host": "localhost",
+	"port": 10000,
+	"user": "rsstudent",
+
+	"output_data_path":"/output_indicators",
+
+	"cdr_data_table_format_comment_": "pdate,call_datetime,imei,imsi,cell_id,latitude,longitude,admin1,admin1_code,admin2,admin2_code,admin3,admin3_code",
+
+	"baseline_start_date": "2016-05-01",
+	"baseline_end_date": "2016-05-02"
+
+}

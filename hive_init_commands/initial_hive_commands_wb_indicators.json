@@ -1,0 +1,15 @@
+{
+  "hive_commands": [
+	"set hive.exec.dynamic.partition.mode=nonstrict",
+	"set hive.exec.dynamic.partition=true",
+	"set mapred.reduce.slowstart.completed.maps=0.98",
+	"set mapred.job.reuse.jvm.num.tasks=50",
+	"set mapred.child.java.opts=-Xmx2048m -XX:-UseGCOverheadLimit -XX:+UseConcMarkSweepGC",
+	"set hive.tez.container.size=2048",
+	"set tez.am.resource.memory.mb=2048",
+	"set hive.support.sql11.reserved.keywords=false",
+	"ADD JAR /disk2/lib/cdrlibindicator.jar",
+	"create temporary function GreatCircleDistance as 'com.apichon.mobility.hive.udf.indicator.GreatCircleDistance'",
+	"use {db_name}"	
+  ]
+}
