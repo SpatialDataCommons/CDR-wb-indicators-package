@@ -3,12 +3,9 @@
 This code is for generating a set of indicators defined by WorldBank under [worldbank/covid-mobile-data](https://github.com/worldbank/covid-mobile-data/tree/master/cdr-aggregation).
 It specifically developed to run on Hadoop/Hive cluster and the data resisted on Hive table.
 
-For the definition of the indicators, please refer to [indicator definition](https://github.com/worldbank/covid-mobile-data/tree/master/cdr-aggregation#indicators-computation)
-
-
 
 ### Table of contents
-
+* [Indicator Definition](#indicator-definition)
 * [Required Software](#required-software)
 * [Installation](#installation)
 * [Data preparation](#data-preparation)
@@ -16,16 +13,56 @@ For the definition of the indicators, please refer to [indicator definition](htt
 * [Run program](#run-program)
 * [Indicator results](#indicator-results)
 
+## Indicator Definition
+| Indicator | Name | Unit | Description | 
+| :---: | --- | --- | --- |
+| 1 | Count of all CDR | Hour |Sum across all mobile usage in the given hour and lowest admin area |
+| 2 | Count of unique handset | Hour | Sum all unique IMEI with an observation in the given admin area and time period |
+| 3 | Count of unique handset | Day | Sum all unique IMEI with an observation in the given admin area and time period |
+| 4 | Ratio of residents active that day based on those present during baseline | Day | Focusing just on the baseline period, calculate home location per individual and aggregate total IMEI per home location. On a daily basis, calculate the number of active users (defined as those that have made at least one observation on that day) but only focused on those IMEI that had at least one observation during the baseline period. Take the ratio of active residents to total residents |
+| 5 | Origin Destination Matrix - trips between two regions | Day | 1. For each subscriber, list the unique regions that they visited within the time day, ordered by time. Create pairs of regions by pairing the nth region with all other regions that come after it. For example, the sequence [A, B, C, D] would result in the pairings [AB, AC, AD, BC, BD, CD]. For each pair, count the number of times that pair appears. 2. For each subscriber, look at the location of the first observation of the day. Look back and get the location of the last observation before this one (no matter how far back it goes) to form a pair, keep the date assigned to this pair as the date of the first observation of the day 3. Sum all pairs from 1 and from 2 for each day (also keep the sum of 1 and sum of 2 as variables). |
+| 6 | Residents living in area | Week | Look at the location of the last observation on each day of the week and take the modal location to be the home location. If there is more than one modal region, the one that is the subscriber's most recent last location of the day is selected. Count number of subscribers assigned to each region for the specific week |
+| 7 | Mean and Standard Deviation of distance traveled (by home location) | Day | Calculate distance traveled by each subscriber daily based on location of all calls (compute distance between tower cluster centroids). Group subscribers by their home location. Calculate mean distance traveled and SD for all subscribers from the same home region. |
+| 8 | Mean and Standard Deviation of distance traveled (by home location) | Week | Same as Indicator 7 but at week level |
+| 9 | Daily locations based on Home Region with average stay time and SD of stay time | Day | 1. For days with at least one observation, assign the district where the most time is spent (so each subscriber present on a day should have one location) 2. Use Weekly assigned home location (#6 above) for each person. 3. Create matrix of home location vs day location: for each home location sum the total number of people that from that home location that are in each district (including the home one) based on where they spent the most time and get mean and SD for time spent in the location (by home location) |
+| 10 | Simple Origin Destination Matrix - trips between consecutive in time regions with duration | Day | 1. For each SIM, calculate movement between consecutive observations. 2. Calculate time spent in the origin and time spent in the destination for each trip. 3. For each day, sum all people going from X to Y area and the average time spent in X before going and spent in Y after arriving. |
+| 11 | Residents living in area | Month | Same as Indicator 6 but at Month level |
+
+For the detail definition of the indicators, please refer to [indicator definition](https://github.com/worldbank/covid-mobile-data/tree/master/cdr-aggregation#indicators-computation)
 ## Required Software
 * Hadoop cluster with Hive installed (Hortonwork Data Platform (HDP) 2.6.5)
 * Hive 1.2 or higher
 * Python 3 or above 
 * Python pip3 (a Python package installer)
 
+
+
 ## Installation
+* Select machine to install software, better to **use one of slave machine** in the cluster (avoid use master node)
+* Create target directory: /mobipack and go into that directory
+* Install Python (3.7.9) and virtual environment
+  ```
+  wget https://www.python.org/ftp/python/3.7.9/Python-3.7.9.tgz
+  tar xvf Python-3.7.9.tgz
+  cd Python-3.7*/
+  ./configure --enable-loadable-sqlite-extensions --enable-optimizations
+  make altinstall
+  
+  pip3.7 install virtualenv
+  virtualenv ve379                  # create virtual environment
+  source ve379/bin/activate         # enter virtual environment
+  ```
+* For CentOS, install additional software
+  ```
+  yum -y install cyrus-sasl cyrus-sasl-devel cyrus-sasl-lib 
+  yum -y install git
+  ```
 * Clone the repository and then
+  ```
+  git clone https://github.com/SpatialDataCommons/CDR-wb-indicators-package.git
+  ```
 * Install all requirement packages in requirements.txt using command 
-  * pip install -r requirements.txt
+  * pip3.7 install -r requirements.txt
 * Upload lib to hadoop master machine such as `/hive/lib`
   * /hive/lib/cdrlibindicator.jar
 * Change lib path in `initial_hive_commands_wb_indicators.json` under `hive_init_commands`directory.
@@ -52,7 +89,8 @@ IMEI           : International Mobile Equipment Identity (IMEI) of Caller
 IMSI           : International Mobile Subscriber Identity (IMSI) of Caller
 PDATE          : date only format, ex: 2020-10-29
 CALL_DATETIME  : Activity Time (Start Time) in “YYYY-MM-DD HH:mm:ss” format 
-CELL_ID        : Unique Cell Tower ID (LAC+CellID)
+LAC            : Location Area Code 
+CELL_ID        : Unique Cell Tower ID 
 LOGITUDE       : Real Number (decimal degree) in WGS84
 LATITUDE       : Real Number (decimal degree) in WGS84
 ADMIN1         : name of administrative level 1
@@ -65,7 +103,7 @@ ADMIN3_CODE    : code of administrative level 3
 
 Example script for creating table on Hive.
 ```
-create table cdr_data(imei string,imsi string,call_datetime string,cell_id string,longitude string,latitude string,
+create table cdr_data(imei string,imsi string,call_datetime string,lac string,cell_id string,longitude string,latitude string,
 admin1 string, admin1_code string,admin2 string, admin2_code string,admin3 string, admin3_code string)
 PARTITIONED BY (pdate string)
 ROW FORMAT DELIMITED
@@ -80,10 +118,9 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.dynamic.partition=true; 
 
 INSERT OVERWRITE  table cdr_data partition (pdate) 
-select imei,imsi,call_datetime,cell_id,longitude,latitude,admin1,admin1_code,admin2,admin2_code,admin3,admin3_code,to_date(call_datetime) as pdate
+select imei,imsi,call_datetime,lac,cell_id,longitude,latitude,admin1,admin1_code,admin2,admin2_code,admin3,admin3_code,to_date(call_datetime) as pdate
 from <exiting table>;
 ```
-
 
 ## Configuration
 In `config_template.json` file, you need to assign the right path, prefix, location and so on. Here is an example of a `config_template.json` file with an explanation 
@@ -108,7 +145,7 @@ In `config_template.json` file, you need to assign the right path, prefix, locat
 
 	"host": "localhost",
 	"port": 10000,
-	"user": "rsstudent",
+	"user": "hdfs",
 
 	"output_data_path":"/output_indicators",
 

@@ -8,7 +8,7 @@
 	"set hive.tez.container.size=2048",
 	"set tez.am.resource.memory.mb=2048",
 	"set hive.support.sql11.reserved.keywords=false",
-	"ADD JAR /disk2/lib/cdrlibindicator.jar",
+	"ADD JAR /hive/lib/cdrlibindicator.jar",
 	"create temporary function GreatCircleDistance as 'com.apichon.mobility.hive.udf.indicator.GreatCircleDistance'",
 	"use {db_name}"	
   ]
