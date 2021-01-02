@@ -14,19 +14,19 @@ It specifically developed to run on Hadoop/Hive cluster and the data resisted on
 * [Indicator results](#indicator-results)
 
 ## Indicator Definition
-| Indicator | Name | Unit | Description | 
-| :---: | --- | --- | --- |
-| 1 | Count of all CDR | Hour |Sum across all mobile usage in the given hour and lowest admin area |
-| 2 | Count of unique handset | Hour | Sum all unique IMEI with an observation in the given admin area and time period |
-| 3 | Count of unique handset | Day | Sum all unique IMEI with an observation in the given admin area and time period |
-| 4 | Ratio of residents active that day based on those present during baseline | Day | Focusing just on the baseline period, calculate home location per individual and aggregate total IMEI per home location. On a daily basis, calculate the number of active users (defined as those that have made at least one observation on that day) but only focused on those IMEI that had at least one observation during the baseline period. Take the ratio of active residents to total residents |
-| 5 | Origin Destination Matrix - trips between two regions | Day | 1. For each subscriber, list the unique regions that they visited within the time day, ordered by time. Create pairs of regions by pairing the nth region with all other regions that come after it. For example, the sequence [A, B, C, D] would result in the pairings [AB, AC, AD, BC, BD, CD]. For each pair, count the number of times that pair appears. 2. For each subscriber, look at the location of the first observation of the day. Look back and get the location of the last observation before this one (no matter how far back it goes) to form a pair, keep the date assigned to this pair as the date of the first observation of the day 3. Sum all pairs from 1 and from 2 for each day (also keep the sum of 1 and sum of 2 as variables). |
-| 6 | Residents living in area | Week | Look at the location of the last observation on each day of the week and take the modal location to be the home location. If there is more than one modal region, the one that is the subscriber's most recent last location of the day is selected. Count number of subscribers assigned to each region for the specific week |
-| 7 | Mean and Standard Deviation of distance traveled (by home location) | Day | Calculate distance traveled by each subscriber daily based on location of all calls (compute distance between tower cluster centroids). Group subscribers by their home location. Calculate mean distance traveled and SD for all subscribers from the same home region. |
-| 8 | Mean and Standard Deviation of distance traveled (by home location) | Week | Same as Indicator 7 but at week level |
-| 9 | Daily locations based on Home Region with average stay time and SD of stay time | Day | 1. For days with at least one observation, assign the district where the most time is spent (so each subscriber present on a day should have one location) 2. Use Weekly assigned home location (#6 above) for each person. 3. Create matrix of home location vs day location: for each home location sum the total number of people that from that home location that are in each district (including the home one) based on where they spent the most time and get mean and SD for time spent in the location (by home location) |
-| 10 | Simple Origin Destination Matrix - trips between consecutive in time regions with duration | Day | 1. For each SIM, calculate movement between consecutive observations. 2. Calculate time spent in the origin and time spent in the destination for each trip. 3. For each day, sum all people going from X to Y area and the average time spent in X before going and spent in Y after arriving. |
-| 11 | Residents living in area | Month | Same as Indicator 6 but at Month level |
+| Indicator | Name | Unit |  
+| :---: | --- | --- |
+| 1 | Count of all CDR | Hour |
+| 2 | Count of unique handset | Hour | 
+| 3 | Count of unique handset | Day | 
+| 4 | Ratio of residents active that day based on those present during baseline | Day | 
+| 5 | Origin Destination Matrix - trips between two regions | Day | 
+| 6 | Residents living in area | Week | 
+| 7 | Mean and Standard Deviation of distance traveled (by home location) | Day |
+| 8 | Mean and Standard Deviation of distance traveled (by home location) | Week |
+| 9 | Daily locations based on Home Region with average stay time and SD of stay time | Day | 
+| 10 | Simple Origin Destination Matrix - trips between consecutive in time regions with duration | Day | 
+| 11 | Residents living in area | Month | 
 
 For the detail definition of the indicators, please refer to [indicator definition](https://github.com/worldbank/covid-mobile-data/tree/master/cdr-aggregation#indicators-computation)
 ## Required Software

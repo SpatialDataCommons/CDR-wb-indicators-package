@@ -25,7 +25,6 @@ sum(if(admin2_code=lag(admin2_code),0,1)) over (partition by pdate,t1.imei order
 pdate
 from {provider_prefix}_indicator09_cdr_data_lead t1;
 
-
 create table {provider_prefix}_indicator10_date_imei_admin3 (imei string,tripid_admin3 int,starttime string,endtime string,todaystay double,totalpoints int,
 admin1 string,admin1_code string,admin2 string,admin2_code string,admin3 string,admin3_code string)
 PARTITIONED BY (pdate string)
