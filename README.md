@@ -16,8 +16,8 @@ It specifically developed to run on Hadoop/Hive cluster and the data resisted on
 ## Indicator Definition
 | Indicator | Name | Unit |  
 | :---: | --- | --- |
-| 1 | Count of all CDR | Hour |
-| 2 | Count of unique handset | Hour | 
+| 1 | Count of all CDR | Day/Hour |
+| 2 | Count of unique handset | Day/Hour | 
 | 3 | Count of unique handset | Day | 
 | 4 | Ratio of residents active that day based on those present during baseline | Day | 
 | 5 | Origin Destination Matrix - trips between two regions | Day | 
